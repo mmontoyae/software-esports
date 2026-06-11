@@ -61,6 +61,7 @@ function parseJuego(r){
     id: nombre,
     nombre,
     icono: ((r['icono'] ?? r['emoji'] ?? '').toString().trim()) || '🎮',
+    imagen: (r['imagen'] ?? r['imagenes'] ?? r['foto'] ?? r['img'] ?? '').toString().trim(),
     descripcion: (r['descripcion'] ?? r['descripción'] ?? '').toString().trim(),
     modo: (r['modo'] ?? '').toString().trim(),
     color: ((r['color'] ?? '').toString().trim()) || 'cyan',

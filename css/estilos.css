@@ -82,6 +82,9 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rg
 .game{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel);backdrop-filter:blur(6px);padding:28px 24px;transition:.25s}
 .game:hover{transform:translateY(-6px);border-color:var(--c,var(--cyan));box-shadow:0 14px 40px rgba(0,0,0,.45)}
 .game .ico{width:54px;height:54px;border-radius:12px;display:grid;place-items:center;font-size:1.7rem;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.game.has-img{padding-top:0}
+.game .cover{display:block;width:calc(100% + 48px);height:160px;object-fit:cover;margin:0 -24px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.03)}
+.pill-img{width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin:-2px 4px 0 0;border:1px solid var(--line)}
 .game h3{font-size:1.35rem;margin:16px 0 6px}
 .game p{color:var(--muted);font-size:.95rem}
 .game .mode{margin-top:14px;display:inline-block;font-family:var(--font-d);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--c,var(--cyan));border:1px solid var(--c,var(--cyan));border-radius:999px;padding:4px 12px}

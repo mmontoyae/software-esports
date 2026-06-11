@@ -28,21 +28,45 @@ function colorCss(c){
   return 'var(--cyan)';
 }
 
+/* Si una imagen de juego no carga, se reemplaza por su emoji (respaldo) */
+window.imgFallbackCover = function(img){
+  const d = document.createElement('div');
+  d.className = 'ico';
+  d.textContent = img.dataset.emoji || '🎮';
+  const card = img.closest('.game'); if(card) card.classList.remove('has-img');
+  img.replaceWith(d);
+};
+window.imgFallbackPill = function(img){
+  const s = document.createElement('span');
+  s.textContent = img.dataset.emoji || '🎮';
+  img.replaceWith(s);
+};
+
 /* ---------- RENDER: HERO (pastillas de juegos) ---------- */
 function renderHeroPills(){
   $('hero-pills').innerHTML = juegosActivos()
-    .map(j => `<span class="pill">${esc(j.icono)} <b>${esc(j.nombre)}</b></span>`).join('');
+    .map(j => {
+      const ico = j.imagen
+        ? `<img class="pill-img" src="${esc(j.imagen)}" alt="" data-emoji="${esc(j.icono)}" onerror="imgFallbackPill(this)">`
+        : esc(j.icono);
+      return `<span class="pill">${ico} <b>${esc(j.nombre)}</b></span>`;
+    }).join('');
 }
 
 /* ---------- RENDER: tarjetas de juegos ---------- */
 function renderGamesGrid(){
-  $('games-grid').innerHTML = juegosActivos().map(j => `
-    <div class="game reveal" style="--c:${colorCss(j.color)}">
-      <div class="ico">${esc(j.icono)}</div>
+  $('games-grid').innerHTML = juegosActivos().map(j => {
+    const media = j.imagen
+      ? `<img class="cover" src="${esc(j.imagen)}" alt="${esc(j.nombre)}" loading="lazy" data-emoji="${esc(j.icono)}" onerror="imgFallbackCover(this)">`
+      : `<div class="ico">${esc(j.icono)}</div>`;
+    return `
+    <div class="game reveal${j.imagen ? ' has-img' : ''}" style="--c:${colorCss(j.color)}">
+      ${media}
       <h3>${esc(j.nombre)}</h3>
       <p>${esc(j.descripcion)}</p>
       <span class="mode">${esc(j.modo)}</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 /* ---------- RENDER: selector de juego en la inscripción + precio ---------- */

@@ -1,0 +1,12 @@
+Pon aquí las imágenes de los juegos.
+
+Nombres que usa la web por defecto (puedes cambiarlos en la columna
+"Imagen" de la pestaña Juegos de tu Google Sheets):
+
+  fortnite.png
+  valorant.png
+  league-of-legends.png
+  cod-mobile.png
+
+Recomendado: imágenes horizontales (ej. 600x360 px), en .png, .jpg o .webp.
+Si un juego no tiene imagen aquí, la web muestra su emoji automáticamente.

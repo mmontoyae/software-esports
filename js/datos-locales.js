@@ -15,7 +15,8 @@
    pon  activo:false . Para AÑADIR uno, copia un bloque { ... }.
    - id:          identificador interno (debe coincidir en premios/resultados)
    - nombre:      nombre visible
-   - icono:       emoji
+   - icono:       emoji (se usa como respaldo si no hay imagen)
+   - imagen:      ruta a la imagen del juego, ej. "imagenes/fortnite.png" (deja "" para usar el emoji)
    - descripcion: texto de la tarjeta
    - modo:        etiqueta pequeña (ej. "5 vs 5 · Shooter táctico")
    - color:       acento. Usa: cyan, magenta, violet, gold, o un hex #f9a826
@@ -24,22 +25,22 @@
    - activo:      true = se muestra · false = oculto en toda la web */
 let JUEGOS = [
   {
-    id:"Fortnite", nombre:"Fortnite", icono:"🏗️",
+    id:"Fortnite", nombre:"Fortnite", icono:"🏗️", imagen:"imagenes/fortnite.png",
     descripcion:"Battle Royale competitivo donde la construcción, la estrategia y la puntería son clave para alcanzar la Victoria Magistral.",
     modo:"Escuadras · Battle Royale", color:"violet", costo:5, jugadores:4, activo:true
   },
   {
-    id:"Valorant", nombre:"Valorant", icono:"🎯",
+    id:"Valorant", nombre:"Valorant", icono:"🎯", imagen:"imagenes/valorant.png",
     descripcion:"Shooter táctico 5 vs 5 donde la coordinación, el control de mapas y el uso inteligente de agentes marcan la diferencia.",
     modo:"5 vs 5 · Shooter táctico", color:"magenta", costo:5, jugadores:5, activo:true
   },
   {
-    id:"League of Legends", nombre:"League of Legends", icono:"⚔️",
+    id:"League of Legends", nombre:"League of Legends", icono:"⚔️", imagen:"imagenes/league-of-legends.png",
     descripcion:"MOBA estratégico donde dos equipos de cinco jugadores luchan por destruir el nexo enemigo en la Grieta del Invocador.",
     modo:"5 vs 5 · MOBA", color:"cyan", costo:5, jugadores:5, activo:true
   },
   {
-    id:"COD Mobile", nombre:"COD Mobile", icono:"📱",
+    id:"COD Mobile", nombre:"COD Mobile", icono:"📱", imagen:"imagenes/cod-mobile.png",
     descripcion:"Acción competitiva en dispositivos móviles con modos como Buscar y Destruir, Punto Caliente y Control bajo reglas de torneo.",
     modo:"5 vs 5 · Mobile FPS", color:"#f9a826", costo:5, jugadores:5, activo:true
   }
