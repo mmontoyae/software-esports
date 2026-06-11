@@ -155,9 +155,16 @@ function renderRulesTabs(){
 function renderRules(key){
   const cards = REGLAMENTO[key] || [];
   $('rules-panes').innerHTML = `<div class="tabpane show"><div class="rules">${
-    cards.map(c => `<div class="rule"><h3>${esc(c.titulo)}</h3><ul>${
-      (c.reglas || []).map(r => `<li>${esc(r)}</li>`).join('')
-    }</ul></div>`).join('')
+    cards.map(c => {
+      const baseReglas = Array.isArray(c.reglas) ? c.reglas : [c.reglas];
+      const puntosIndividuales = baseReglas
+        .flatMap(r => String(r || '').split('\n'))
+        .map(r => r.trim())
+        .filter(r => r.length > 0);
+      return `<div class="rule"><h3>${esc(c.titulo)}</h3><ul>${
+        puntosIndividuales.map(r => `<li>${esc(r)}</li>`).join('')
+      }</ul></div>`;
+    }).join('')
   }</div></div>`;
 }
 
