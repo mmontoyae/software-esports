@@ -57,21 +57,24 @@
     </label>
   </div>
 
-  <!-- POSICIONES -->
+  <!-- PUNTAJES POR RONDA -->
   <div class="bloque">
     <div class="bloque-head">
-      <h3>📊 Tabla de posiciones</h3>
-      <button class="btn btn-ghost mini" id="btn-add">+ Agregar equipo</button>
+      <h3>🎯 Puntajes por ronda</h3>
+      <div class="ronda-ctrls">
+        <button class="btn btn-ghost mini" id="btn-ronda-menos">– Ronda</button>
+        <button class="btn btn-ghost mini" id="btn-ronda-mas">+ Ronda</button>
+        <button class="btn btn-ghost mini" id="btn-add">+ Equipo/Jugador</button>
+      </div>
     </div>
+    <div class="ronda-now" id="ronda-now"></div>
     <div class="tabla-wrap">
-      <table class="tabla">
-        <thead>
-          <tr><th>#</th><th>Equipo</th><th>PJ <small>(partidas)</small></th><th>Pts <small>(puntos)</small></th><th></th></tr>
-        </thead>
+      <table class="tabla" id="grid">
+        <thead id="grid-head"></thead>
         <tbody id="filas"></tbody>
       </table>
     </div>
-    <p class="hint">PJ = partidas jugadas · Pts = puntos. La tabla se ordena por puntos al guardar.</p>
+    <p class="hint">Escribe el puntaje de cada ronda; el <b>Total</b> se suma solo. Deja en blanco las rondas que aún no se juegan. Al guardar, la tabla se ordena por total.</p>
   </div>
 
   <!-- GANADORES -->

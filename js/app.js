@@ -83,29 +83,18 @@ function costoSeleccion(){
   return (j && Number(j.costo) > 0) ? Number(j.costo) : CONFIG.precioPorJugador;
 }
 function actualizarPrecio(){
-  const juegoSeleccionado = $('sel-juego').value;
-  // CONTROL DE RESPALDO: Si no hay juego seleccionado, muestra $... y detiene el proceso
-  if (!juegoSeleccionado) {
-    $('precio-jugador').textContent = '$...';
-    $('total-ui').textContent = '$0';
-    return; 
-  }
   $('precio-jugador').textContent = '$' + costoSeleccion();
   // Autocompleta el nº de jugadores sugerido del juego (si el usuario no lo cambió a mano)
-  const j = juegoPorId(juegoSeleccionado);
+  const j = juegoPorId($('sel-juego').value);
   const inp = $('jugadores');
   if(j && Number(j.jugadores) > 0 && !inp.dataset.tocado) inp.value = j.jugadores;
   calcTotal();
 }
 function calcTotal(){
-  // Si no hay juego seleccionado, el total siempre debe ser $0
-  if (!$('sel-juego').value) {
-    $('total-ui').textContent = '$0';
-    return;
-  }
   const n = Math.max(0, parseInt($('jugadores').value) || 0);
   $('total-ui').textContent = '$' + (n * costoSeleccion());
 }
+
 /* ---------- RENDER: PREMIOS (pestañas + podio) ---------- */
 let prizeActivo = null;
 function renderPrizeTabs(){
@@ -148,6 +137,12 @@ function renderResultados(game){
   const rows = [...(d.posiciones || [])].sort((a,b) => b.pts - a.pts);
   $('standings-body').innerHTML = rows.map((r,i) =>
     `<tr><td>${i+1}</td><td>${esc(r.equipo)}</td><td>${esc(r.pj)}</td><td>${esc(r.pts)}</td></tr>`).join('');
+  // Indicador "Ronda X en juego" (la ronda en curso = mayor nº de rondas jugadas)
+  const elRonda = $('ronda-actual');
+  if(elRonda){
+    const ronda = rows.reduce((m,r) => Math.max(m, Number(r.pj) || 0), 0);
+    elRonda.innerHTML = ronda ? `<span class="ronda-pill-in">🔴 Ronda ${ronda} en juego</span>` : '';
+  }
 }
 
 /* ---------- RENDER: REGLAMENTO (pestañas + tarjetas) ---------- */
@@ -166,16 +161,9 @@ function renderRulesTabs(){
 function renderRules(key){
   const cards = REGLAMENTO[key] || [];
   $('rules-panes').innerHTML = `<div class="tabpane show"><div class="rules">${
-    cards.map(c => {
-      const baseReglas = Array.isArray(c.reglas) ? c.reglas : [c.reglas];
-      const puntosIndividuales = baseReglas
-        .flatMap(r => String(r || '').split('\n'))
-        .map(r => r.trim())
-        .filter(r => r.length > 0);
-      return `<div class="rule"><h3>${esc(c.titulo)}</h3><ul>${
-        puntosIndividuales.map(r => `<li>${esc(r)}</li>`).join('')
-      }</ul></div>`;
-    }).join('')
+    cards.map(c => `<div class="rule"><h3>${esc(c.titulo)}</h3><ul>${
+      (c.reglas || []).map(r => `<li>${esc(r)}</li>`).join('')
+    }</ul></div>`).join('')
   }</div></div>`;
 }
 
@@ -280,7 +268,7 @@ function init(){
   (function(){
     const zona = $('fecha-zona');
     if(!CONFIG.fechaTorneo){
-      zona.innerHTML = '<div class="date-badge">📅 Fecha de inicio del torneo: <b>27/06/2026</b> — síguenos en Discord</div>';
+      zona.innerHTML = '<div class="date-badge">📅 Fecha del torneo: <b>Por confirmar</b> — síguenos en Discord</div>';
       return;
     }
     zona.innerHTML = '<div class="count"><div class="box"><div class="n" id="cd-d">--</div><div class="l">Días</div></div><div class="box"><div class="n" id="cd-h">--</div><div class="l">Horas</div></div><div class="box"><div class="n" id="cd-m">--</div><div class="l">Min</div></div><div class="box"><div class="n" id="cd-s">--</div><div class="l">Seg</div></div></div>';

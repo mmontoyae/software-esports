@@ -1,32 +1,39 @@
 /* =====================================================================
-   PANEL DE STAFF — lógica
+   PANEL DE STAFF — lógica (puntajes por ronda)
    ---------------------------------------------------------------------
-   • Lee y escribe en tu Google Sheet a través de un Google Apps Script
-     publicado como "aplicación web" (URL en CONFIG.appsScriptURL).
-   • La contraseña se verifica EN EL SERVIDOR (Apps Script), no aquí.
-   • Si no hay appsScriptURL, funciona en MODO DEMO (no guarda nada).
+   • Registra el puntaje de cada equipo/jugador POR RONDA.
+   • El TOTAL se suma solo. Al guardar, el Apps Script escribe la pestaña
+     "Rondas" y recalcula "Posiciones" (Pts = suma, PJ = rondas jugadas).
+   • La contraseña se verifica en el servidor (Apps Script).
+   • Sin appsScriptURL → MODO DEMO (no guarda).
    ===================================================================== */
 (function(){
   const $ = id => document.getElementById(id);
   const URL_API = (typeof CONFIG !== 'undefined' && CONFIG.appsScriptURL ? CONFIG.appsScriptURL : '').trim();
   const DEMO = !URL_API;
 
-  // Estado en memoria
   let pass = '';
-  let datos = { juegos: [], posiciones: {}, ganadores: {} };
+  let datos = { juegos: [], rondas: {}, ganadores: {} };
   let juegoActual = '';
 
-  // Datos de ejemplo para el modo demo
+  // Datos de ejemplo (modo demo)
   const DEMO_DATOS = {
     juegos: ['Fortnite','Valorant','League of Legends','COD Mobile'],
-    posiciones: {
-      'Fortnite':[{equipo:'Equipo Alfa',pj:3,pts:21},{equipo:'Los Cracks',pj:3,pts:17},{equipo:'Nova',pj:3,pts:12}],
-      'Valorant':[{equipo:'Phantom',pj:2,pts:6},{equipo:'Spike Rush',pj:2,pts:3}]
+    rondas: {
+      'Fortnite': { numRondas:3, equipos:[
+        {equipo:'Equipo Alfa', puntajes:[8,7,6]},
+        {equipo:'Los Cracks',  puntajes:[5,6,'']},
+        {equipo:'Nova',        puntajes:[4,'','']}
+      ]},
+      'Valorant': { numRondas:2, equipos:[
+        {equipo:'Phantom', puntajes:[3,3]},
+        {equipo:'Spike Rush', puntajes:[3,'']}
+      ]}
     },
     ganadores: { 'Fortnite':{campeon:'Equipo Alfa',segundo:'Los Cracks',tercero:'Nova'} }
   };
 
-  /* ---------- Llamada al Apps Script (POST simple, sin preflight) ---------- */
+  /* ---------- Apps Script ---------- */
   async function api(payload){
     if(DEMO) throw new Error('demo');
     const res = await fetch(URL_API, { method:'POST', body: JSON.stringify(payload) });
@@ -50,7 +57,7 @@
       }else{
         await api({ action:'login', password:pass });
         const d = await api({ action:'datos', password:pass });
-        datos = { juegos:d.juegos||[], posiciones:d.posiciones||{}, ganadores:d.ganadores||{} };
+        datos = { juegos:d.juegos||[], rondas:d.rondas||{}, ganadores:d.ganadores||{} };
       }
       abrirPanel();
     }catch(err){
@@ -68,23 +75,26 @@
     llenarSelectorJuegos();
     seleccionarJuego(datos.juegos[0] || '');
   }
-
   function salir(){
     pass=''; $('pass').value=''; $('login-msg').textContent='';
     $('panel').hidden = true; $('login').hidden = false;
   }
 
-  /* ---------- RENDER ---------- */
+  /* ---------- selector de juego ---------- */
   function llenarSelectorJuegos(){
-    const sel = $('sel-juego');
-    sel.innerHTML = (datos.juegos.length ? datos.juegos : ['(sin juegos)'])
+    $('sel-juego').innerHTML = (datos.juegos.length ? datos.juegos : ['(sin juegos)'])
       .map(j => `<option value="${escAttr(j)}">${escHtml(j)}</option>`).join('');
   }
 
   function seleccionarJuego(j){
     juegoActual = j;
     $('sel-juego').value = j;
-    renderFilas(datos.posiciones[j] || []);
+    const r = datos.rondas[j];
+    const data = r
+      ? { numRondas: Math.max(1, r.numRondas||1), filas: (r.equipos||[]).map(e => ({equipo:e.equipo, puntajes:(e.puntajes||[]).slice()})) }
+      : { numRondas: 1, filas: [] };
+    if(!data.filas.length) data.filas.push({equipo:'', puntajes:['']});
+    renderGrid(data);
     const g = datos.ganadores[j] || {};
     $('g-1').value = g.campeon || '';
     $('g-2').value = g.segundo || '';
@@ -92,69 +102,104 @@
     estado('', '');
   }
 
-  function renderFilas(filas){
-    const tb = $('filas');
-    tb.innerHTML = '';
-    if(!filas.length) agregarFila();
-    else filas.forEach(f => agregarFila(f));
-    renumerar();
+  /* ---------- cuadrícula de rondas ---------- */
+  function renderGrid(data){
+    const N = Math.max(1, data.numRondas||1);
+    // encabezado
+    let th = '<tr><th>#</th><th>Equipo / Jugador</th>';
+    for(let r=1;r<=N;r++) th += `<th class="col-num">R${r}</th>`;
+    th += '<th class="col-num">Total</th><th></th></tr>';
+    $('grid-head').innerHTML = th;
+    // filas
+    $('filas').innerHTML = '';
+    data.filas.forEach(f => agregarFila(f, N));
+    if(!data.filas.length) agregarFila({equipo:'',puntajes:[]}, N);
+    refrescar();
   }
 
-  function agregarFila(f){
-    f = f || {equipo:'',pj:0,pts:0};
+  function agregarFila(f, N){
+    f = f || {equipo:'', puntajes:[]};
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="pos"></td>
-      <td><input class="f-equipo" value="${escAttr(f.equipo||'')}" placeholder="Nombre del equipo"></td>
-      <td class="col-num"><input class="f-pj" type="number" min="0" value="${Number(f.pj)||0}"></td>
-      <td class="col-num"><input class="f-pts" type="number" min="0" value="${Number(f.pts)||0}"></td>
-      <td><button class="btn-del" title="Quitar">✕</button></td>`;
-    tr.querySelector('.btn-del').onclick = () => { tr.remove(); renumerar(); };
+    let celdas = `<td class="pos"></td>
+      <td><input class="f-equipo" value="${escAttr(f.equipo||'')}" placeholder="Nombre"></td>`;
+    for(let r=0;r<N;r++){
+      const val = (f.puntajes && f.puntajes[r]!=null && f.puntajes[r]!=='') ? f.puntajes[r] : '';
+      celdas += `<td class="col-num"><input class="f-r" type="number" inputmode="numeric" value="${val}"></td>`;
+    }
+    celdas += `<td class="col-num f-total">0</td><td><button class="btn-del" title="Quitar">✕</button></td>`;
+    tr.innerHTML = celdas;
+    tr.querySelector('.btn-del').onclick = () => { tr.remove(); refrescar(); };
+    tr.querySelectorAll('.f-r').forEach(inp => inp.addEventListener('input', refrescar));
     $('filas').appendChild(tr);
   }
 
-  function renumerar(){
+  // Recalcula totales por fila, numeración y "ronda actual"
+  function refrescar(){
+    let rondaActual = 0;
     $('filas').querySelectorAll('tr').forEach((tr,i) => {
       tr.querySelector('.pos').textContent = i+1;
+      let total = 0;
+      tr.querySelectorAll('.f-r').forEach((inp,k) => {
+        const v = inp.value.trim();
+        if(v!=='' && !isNaN(Number(v))){ total += Number(v); if(k+1>rondaActual) rondaActual = k+1; }
+      });
+      tr.querySelector('.f-total').textContent = total;
     });
+    const now = $('ronda-now');
+    if(now) now.innerHTML = rondaActual
+      ? `🔴 <b>Ronda ${rondaActual}</b> en juego`
+      : `<span class="off">Aún sin puntajes registrados</span>`;
   }
 
-  // Lee la tabla del DOM -> array de filas (descarta equipos vacíos), ordenado por puntos
-  function leerFilas(){
+  // Lee la cuadrícula del DOM
+  function leerGrid(){
+    const head = $('grid-head').querySelectorAll('th.col-num').length; // incluye Total
+    const N = Math.max(1, head - 1);
     const filas = [];
     $('filas').querySelectorAll('tr').forEach(tr => {
       const equipo = tr.querySelector('.f-equipo').value.trim();
-      if(!equipo) return;
-      filas.push({
-        equipo,
-        pj: Number(tr.querySelector('.f-pj').value) || 0,
-        pts: Number(tr.querySelector('.f-pts').value) || 0
+      const puntajes = [];
+      tr.querySelectorAll('.f-r').forEach(inp => {
+        const v = inp.value.trim();
+        puntajes.push(v==='' ? '' : (isNaN(Number(v)) ? '' : Number(v)));
       });
+      if(equipo) filas.push({ equipo, puntajes });
     });
-    filas.sort((a,b) => b.pts - a.pts || b.pj - a.pj);
-    return filas;
+    return { numRondas:N, filas };
+  }
+
+  function cambiarRondas(delta){
+    const d = leerGrid();
+    d.numRondas = Math.max(1, d.numRondas + delta);
+    // ajusta longitud de puntajes
+    d.filas.forEach(f => { f.puntajes.length = d.numRondas; });
+    if(!d.filas.length) d.filas.push({equipo:'',puntajes:[]});
+    renderGrid(d);
+  }
+  function nuevaFila(){
+    const d = leerGrid();
+    d.filas.push({equipo:'', puntajes:Array(d.numRondas).fill('')});
+    renderGrid(d);
   }
 
   function leerGanadores(){
-    return {
-      campeon: $('g-1').value.trim(),
-      segundo: $('g-2').value.trim(),
-      tercero: $('g-3').value.trim()
-    };
+    return { campeon:$('g-1').value.trim(), segundo:$('g-2').value.trim(), tercero:$('g-3').value.trim() };
   }
 
   /* ---------- GUARDAR ---------- */
   async function guardar(){
     if(!juegoActual){ estado('No hay juego seleccionado.','err'); return; }
-    const posiciones = leerFilas();
+    const grid = leerGrid();
     const ganadores = leerGanadores();
 
-    // Guarda en el estado local para que la UI quede consistente
-    datos.posiciones[juegoActual] = posiciones;
+    // guarda en estado local
+    datos.rondas[juegoActual] = {
+      numRondas: grid.numRondas,
+      equipos: grid.filas.map(f => ({equipo:f.equipo, puntajes:f.puntajes.slice()}))
+    };
     datos.ganadores[juegoActual] = ganadores;
 
     if(DEMO){
-      renderFilas(posiciones);
       estado('Guardado en demo (no se escribió en la hoja).','ok');
       toast('Modo demo: configura appsScriptURL para guardar de verdad.');
       return;
@@ -163,9 +208,9 @@
     $('btn-guardar').disabled = true;
     estado('Guardando…','');
     try{
-      await api({ action:'guardar', password:pass, juego:juegoActual, posiciones, ganadores });
-      renderFilas(posiciones); // re-ordena visualmente
-      estado('Cambios guardados ✓  Aparecerán en la web en unos momentos.','ok');
+      await api({ action:'guardar', password:pass, juego:juegoActual,
+                  rondas:grid.filas, numRondas:grid.numRondas, ganadores });
+      estado('Cambios guardados ✓  El total se sumó solo. Aparecerá en la web en unos momentos.','ok');
       toast('¡Guardado! ✅');
     }catch(err){
       estado('No se pudo guardar: ' + err.message, 'err');
@@ -179,7 +224,7 @@
     estado('Recargando…','');
     try{
       const d = await api({ action:'datos', password:pass });
-      datos = { juegos:d.juegos||[], posiciones:d.posiciones||{}, ganadores:d.ganadores||{} };
+      datos = { juegos:d.juegos||[], rondas:d.rondas||{}, ganadores:d.ganadores||{} };
       llenarSelectorJuegos();
       seleccionarJuego(datos.juegos.includes(juegoActual) ? juegoActual : (datos.juegos[0]||''));
       toast('Datos recargados.');
@@ -199,11 +244,10 @@
     $('pass').addEventListener('keydown', e => { if(e.key==='Enter') entrar(); });
     $('btn-salir').onclick = salir;
     $('btn-recargar').onclick = recargar;
-    $('btn-add').onclick = () => { agregarFila(); renumerar(); };
+    $('btn-add').onclick = nuevaFila;
+    $('btn-ronda-mas').onclick = () => cambiarRondas(+1);
+    $('btn-ronda-menos').onclick = () => cambiarRondas(-1);
     $('sel-juego').onchange = e => seleccionarJuego(e.target.value);
     $('btn-guardar').onclick = guardar;
   });
-
-  // Exponer para pruebas (no afecta el navegador)
-  window.__staff = { get datos(){return datos;}, leerFilasDe:(arr)=>arr, };
 })();

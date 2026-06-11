@@ -27,6 +27,7 @@ const CONFIG = {
   hojaReglamento:    "Reglamento",      // 🆕 reglas por juego (y "General")
   hojaPosiciones:    "Posiciones",
   hojaGanadores:     "Ganadores",
+  hojaRondas:        "Rondas",          // 🆕 puntajes por ronda (el total se suma solo)
   hojaPremios:       "Premios",
   hojaTransmisiones: "Transmisiones",   // transmisiones (columnas: Juego / Host / Canal)
 
@@ -34,7 +35,7 @@ const CONFIG = {
   //    Pega aquí la URL del "Web App" de Google Apps Script (ver staff/LÉEME.md).
   //    Sirve para que el staff GUARDE puntos/partidas y campeones en la hoja.
   //    Si lo dejas en "", el panel funciona en modo demo (no guarda nada).
-  appsScriptURL: "https://script.google.com/macros/s/AKfycbxsxs18toAZ6S6DIZHWvCbDutLuqbEwUWCQvUxKK6UkJoDeW7Udb_TGZ1uQCkyD-wLjmw/exec",
+  appsScriptURL: "https://script.google.com/macros/s/AKfycbyZHyt86RFse0Tx6KIXoff9HKFl5E9A5W3XfAvrMj4xl0ZEbI59LYeyiCpB4HnRS6H1wg/exec",
 
   // 💖 Donaciones: WhatsApp donde coordinas las donaciones
   donacionWhatsapp: "593989336030",

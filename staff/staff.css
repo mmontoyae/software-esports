@@ -55,6 +55,11 @@ body.staff{min-height:100vh}
 .bloque{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:20px}
 .bloque-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
 .bloque-head h3{font-size:1.15rem}
+.ronda-ctrls{display:flex;gap:8px;flex-wrap:wrap}
+.ronda-now{font-family:var(--font-d);font-size:.92rem;margin:-4px 0 14px;color:#ff9d9d}
+.ronda-now .off{color:var(--muted)}
+.tabla .f-total{font-family:var(--font-d);font-weight:700;color:var(--cyan);text-align:center;min-width:56px}
+.tabla .col-num input{width:62px;text-align:center}
 
 .tabla-wrap{overflow-x:auto}
 .tabla{width:100%;border-collapse:collapse;min-width:480px}
