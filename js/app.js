@@ -188,6 +188,11 @@ window.renderStreams = renderStreams; // lo usa sheets.js
 /* ---------- Animación al hacer scroll (.reveal) ---------- */
 let _io;
 function observeReveals(){
+  // Si el navegador no soporta IntersectionObserver, mostramos todo directo.
+  if(typeof IntersectionObserver === 'undefined'){
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    return;
+  }
   if(!_io){
     _io = new IntersectionObserver(es => es.forEach(en => {
       if(en.isIntersecting){ en.target.classList.add('in'); _io.unobserve(en.target); }
@@ -200,6 +205,15 @@ function observeReveals(){
     el.style.transitionDelay = (i++ % 4 * 70) + 'ms';
     _io.observe(el);
   });
+}
+
+/* Red de seguridad: si por cualquier motivo el observer no activa los
+   elementos (error, navegador raro, etc.), los mostramos igual tras un
+   instante. Así el contenido NUNCA queda invisible. */
+function revealFallback(){
+  setTimeout(() => {
+    document.querySelectorAll('.reveal:not(.in)').forEach(el => el.classList.add('in'));
+  }, 1500);
 }
 
 /* ---------- Redibuja TODO lo que depende de los datos ---------- */
@@ -218,6 +232,14 @@ window.renderTodo = renderTodo; // lo usa sheets.js tras leer la hoja
 /* INICIALIZACIÓN (eventos y partes fijas)                                */
 /* ===================================================================== */
 function init(){
+  // 1) LO PRIMERO: dibujar el contenido y hacerlo visible.
+  //    Si algo de abajo falla, la página igual se ve.
+  try { renderTodo(); renderStreams(STREAMS); }
+  catch(e){ console.error('Error al dibujar el contenido:', e); }
+  revealFallback();
+
+  // 2) Enlaces y eventos. Protegido: un fallo aquí NO deja la página en blanco.
+  try {
   // Enlaces de comunidad / redes / PDF
   $('link-discord').href  = CONFIG.discord;
   $('link-whatsapp').href = wa("¡Hola! Quiero información sobre el torneo Software E-Sports 2026 🎮");
@@ -305,13 +327,11 @@ Quedo atento(a) para coordinar el pago ✅`;
     const msg = `💖 ¡Hola! Quiero hacer una donación de ${monto} para apoyar el torneo Software E-Sports 2026. ¿Cómo puedo realizar el pago?`;
     window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
   });
+  } catch(e){ console.error('Error al enlazar eventos (el contenido sí se muestra):', e); }
 
-  // Dibuja todo lo dependiente de datos (con respaldo local) y los streams
-  renderTodo();
-  renderStreams(STREAMS);
-
-  // Intenta leer Google Sheets (si está configurado). Está en sheets.js
-  if(typeof cargarGoogleSheets === 'function') cargarGoogleSheets();
+  // 3) Intenta leer Google Sheets (si está configurado). Está en sheets.js
+  try { if(typeof cargarGoogleSheets === 'function') cargarGoogleSheets(); }
+  catch(e){ console.error('Error al leer Google Sheets:', e); }
 }
 
 // Aviso flotante (toast)
