@@ -262,7 +262,7 @@ function init(){
   (function(){
     const zona = $('fecha-zona');
     if(!CONFIG.fechaTorneo){
-      zona.innerHTML = '<div class="date-badge">📅 Fecha del torneo: <b>Por confirmar</b> — síguenos en Discord</div>';
+      zona.innerHTML = '<div class="date-badge">📅 Fecha de inicio del torneo: <b>27/06/2026</b> — síguenos en Discord</div>';
       return;
     }
     zona.innerHTML = '<div class="count"><div class="box"><div class="n" id="cd-d">--</div><div class="l">Días</div></div><div class="box"><div class="n" id="cd-h">--</div><div class="l">Horas</div></div><div class="box"><div class="n" id="cd-m">--</div><div class="l">Min</div></div><div class="box"><div class="n" id="cd-s">--</div><div class="l">Seg</div></div></div>';
