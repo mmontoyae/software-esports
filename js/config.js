@@ -30,6 +30,12 @@ const CONFIG = {
   hojaPremios:       "Premios",
   hojaTransmisiones: "Transmisiones",   // transmisiones (columnas: Juego / Host / Canal)
 
+  // 🔐 PANEL DE STAFF (árbitros / hosts) — carpeta /staff
+  //    Pega aquí la URL del "Web App" de Google Apps Script (ver staff/LÉEME.md).
+  //    Sirve para que el staff GUARDE puntos/partidas y campeones en la hoja.
+  //    Si lo dejas en "", el panel funciona en modo demo (no guarda nada).
+  appsScriptURL: "https://script.google.com/macros/s/AKfycbxsxs18toAZ6S6DIZHWvCbDutLuqbEwUWCQvUxKK6UkJoDeW7Udb_TGZ1uQCkyD-wLjmw/exec",
+
   // 💖 Donaciones: WhatsApp donde coordinas las donaciones
   donacionWhatsapp: "593989336030",
 

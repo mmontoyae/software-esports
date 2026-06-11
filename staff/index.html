@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Panel de Staff · Software E-Sports 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/estilos.css">
+<link rel="stylesheet" href="staff.css">
+</head>
+<body class="staff">
+
+<!-- ===== LOGIN ===== -->
+<section id="login" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo"><img src="../logo.png" alt="" onerror="this.style.display='none'"></div>
+    <span class="tag">Acceso restringido</span>
+    <h1>Panel de <b>Staff</b></h1>
+    <p class="login-sub">Árbitros y hosts. Edita los puntos, partidas y campeones de cada juego.</p>
+
+    <label class="campo">
+      <span>Contraseña</span>
+      <input type="password" id="pass" placeholder="••••••••" autocomplete="current-password">
+    </label>
+    <button class="btn btn-primary" id="btn-entrar">Entrar</button>
+    <div id="login-msg" class="msg"></div>
+
+    <a href="../index.html" class="volver">← Volver al sitio</a>
+  </div>
+</section>
+
+<!-- ===== PANEL ===== -->
+<section id="panel" class="panel" hidden>
+  <header class="panel-top">
+    <div class="pt-left">
+      <span class="tag">Panel de Staff</span>
+      <h2>Resultados <b>en vivo</b></h2>
+    </div>
+    <div class="pt-right">
+      <button class="btn btn-ghost" id="btn-recargar">↻ Recargar</button>
+      <button class="btn btn-ghost" id="btn-salir">Salir</button>
+    </div>
+  </header>
+
+  <div id="demo-banner" class="demo-banner" hidden>
+    🧪 <b>Modo demo:</b> no hay <code>appsScriptURL</code> configurado, así que los cambios
+    <b>no se guardan</b>. Configúralo (ver <code>staff/LÉEME.md</code>) para escribir en la hoja.
+  </div>
+
+  <div class="selector">
+    <label class="campo">
+      <span>Juego</span>
+      <select id="sel-juego"></select>
+    </label>
+  </div>
+
+  <!-- POSICIONES -->
+  <div class="bloque">
+    <div class="bloque-head">
+      <h3>📊 Tabla de posiciones</h3>
+      <button class="btn btn-ghost mini" id="btn-add">+ Agregar equipo</button>
+    </div>
+    <div class="tabla-wrap">
+      <table class="tabla">
+        <thead>
+          <tr><th>#</th><th>Equipo</th><th>PJ <small>(partidas)</small></th><th>Pts <small>(puntos)</small></th><th></th></tr>
+        </thead>
+        <tbody id="filas"></tbody>
+      </table>
+    </div>
+    <p class="hint">PJ = partidas jugadas · Pts = puntos. La tabla se ordena por puntos al guardar.</p>
+  </div>
+
+  <!-- GANADORES -->
+  <div class="bloque">
+    <div class="bloque-head"><h3>🏆 Campeones</h3></div>
+    <div class="podio-grid">
+      <label class="campo"><span>🥇 Campeón</span><input id="g-1" placeholder="Por definir"></label>
+      <label class="campo"><span>🥈 Segundo</span><input id="g-2" placeholder="Por definir"></label>
+      <label class="campo"><span>🥉 Tercero</span><input id="g-3" placeholder="Por definir"></label>
+    </div>
+  </div>
+
+  <div class="guardar-bar">
+    <div id="estado" class="msg"></div>
+    <button class="btn btn-primary grande" id="btn-guardar">💾 Guardar cambios</button>
+  </div>
+</section>
+
+<div id="toast" class="toast"></div>
+
+<script src="../js/config.js"></script>
+<script src="staff.js"></script>
+</body>
+</html>
