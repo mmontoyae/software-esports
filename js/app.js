@@ -70,6 +70,7 @@ function renderGamesGrid(){
 }
 
 /* ---------- RENDER: selector de juego en la inscripción + precio ---------- */
+/* ---------- RENDER: selector de juego en la inscripción + precio ---------- */
 function renderSelectJuegos(){
   const sel = $('sel-juego');
   const prev = sel.value;
@@ -83,14 +84,26 @@ function costoSeleccion(){
   return (j && Number(j.costo) > 0) ? Number(j.costo) : CONFIG.precioPorJugador;
 }
 function actualizarPrecio(){
+  const juegoSeleccionado = $('sel-juego').value;
+  // CONTROL DE RESPALDO: Si no hay juego seleccionado, muestra $... y detiene el proceso
+  if (!juegoSeleccionado) {
+    $('precio-jugador').textContent = '$...';
+    $('total-ui').textContent = '$0';
+    return; 
+  }
   $('precio-jugador').textContent = '$' + costoSeleccion();
   // Autocompleta el nº de jugadores sugerido del juego (si el usuario no lo cambió a mano)
-  const j = juegoPorId($('sel-juego').value);
+  const j = juegoPorId(juegoSeleccionado);
   const inp = $('jugadores');
   if(j && Number(j.jugadores) > 0 && !inp.dataset.tocado) inp.value = j.jugadores;
   calcTotal();
 }
 function calcTotal(){
+  // Si no hay juego seleccionado, el total siempre debe ser $0
+  if (!$('sel-juego').value) {
+    $('total-ui').textContent = '$0';
+    return;
+  }
   const n = Math.max(0, parseInt($('jugadores').value) || 0);
   $('total-ui').textContent = '$' + (n * costoSeleccion());
 }
