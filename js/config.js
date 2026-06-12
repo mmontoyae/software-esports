@@ -11,7 +11,7 @@
       respaldo del archivo  js/datos-locales.js
    ===================================================================== */
 const CONFIG = {
-  whatsapp: "593989336030",                       // WhatsApp de contacto (país + número, sin + ni espacios)
+  whatsapp: "593985210501",                       // WhatsApp de contacto (país + número, sin + ni espacios)
   discord:  "https://discord.gg/YnHqrNw9",        // invitación de Discord
   precioPorJugador: 5,                            // 💵 PRECIO POR DEFECTO (se usa si un juego no tiene precio propio)
   fechaTorneo: "",                                // "" = Por confirmar. Ej: "2026-12-20T18:00:00"
@@ -38,7 +38,7 @@ const CONFIG = {
   appsScriptURL: "https://script.google.com/macros/s/AKfycbyZHyt86RFse0Tx6KIXoff9HKFl5E9A5W3XfAvrMj4xl0ZEbI59LYeyiCpB4HnRS6H1wg/exec",
 
   // 💖 Donaciones: WhatsApp donde coordinas las donaciones
-  donacionWhatsapp: "593989336030",
+  donacionWhatsapp: "593985210501",
 
   // 📱 Redes sociales (deja "" para ocultar el ícono en el pie de página)
   instagram: "",                                  // ej: "https://instagram.com/tucuenta"
