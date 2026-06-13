@@ -69,8 +69,8 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rg
 .btn-primary:hover{transform:translateY(-2px);filter:brightness(1.1)}
 .btn-ghost{border-color:var(--magenta);color:var(--magenta)}
 .btn-ghost:hover{background:rgba(255,47,208,.1);box-shadow:var(--glow-mag)}
-.date-badge{margin-top:36px;display:inline-flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 22px;font-family:var(--font-d);letter-spacing:.06em;backdrop-filter:blur(6px)}
-.date-badge b{color:var(--cyan)}
+.date-badge{margin-top:36px;display:inline-flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 28px;font-family:var(--font-d);font-size:1.5rem;font-weight:700;letter-spacing:.06em;backdrop-filter:blur(6px)}
+.date-badge b{color:var(--cyan);font-size:2rem;text-shadow:var(--glow-cyan);}
 .count{display:flex;gap:14px;justify-content:center;margin-top:36px;flex-wrap:wrap}
 .count .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;min-width:84px;backdrop-filter:blur(6px)}
 .count .n{font-family:var(--font-d);font-size:2rem;font-weight:700;color:var(--cyan);text-shadow:var(--glow-cyan);line-height:1}
