@@ -16,6 +16,73 @@ const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&l
 const juegosActivos = () => JUEGOS.filter(j => j && j.activo !== false);
 const juegoPorId    = id => JUEGOS.find(j => j.id === id);
 
+/* =====================================================================
+   👤 JUEGOS INDIVIDUALES vs 👥 POR EQUIPO
+   ---------------------------------------------------------------------
+   Fortnite, COD y Free Fire se inscriben de forma INDIVIDUAL.
+   El resto de juegos se inscriben POR EQUIPO.
+   La detección funciona tanto por ID como por NOMBRE del juego.
+   (Opcional avanzado: si en la hoja/datos pones  modo:"individual" o
+    modo:"equipo" en un juego, eso manda sobre la detección automática.)
+   ===================================================================== */
+function esJuegoIndividual(id){
+  const j = juegoPorId(id);
+
+  // 1) Si el dato trae un "modo" explícito, respétalo.
+  if(j && j.modo){
+    const m = String(j.modo).toLowerCase();
+    if(m.includes('individual') || m.includes('solo')) return true;
+    if(m.includes('equipo') || m.includes('team'))     return false;
+  }
+
+  // 2) Detección automática por id + nombre (sin acentos, minúsculas).
+  const base = ((id||'') + ' ' + ((j && j.nombre) || ''))
+                 .toLowerCase()
+                 .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const compact = base.replace(/[^a-z0-9]/g,'');          // "free fire" -> "freefire"
+
+  // Coincidencias por nombre completo / id (multi-palabra)
+  if(/fortnite|freefire|callofduty|warzone/.test(compact)) return true;
+
+  // "COD" / "FF" como siglas sueltas (evita falsos positivos como "code")
+  const tokens = base.split(/[^a-z0-9]+/).filter(Boolean);
+  if(tokens.includes('cod') || tokens.includes('ff')) return true;
+
+  return false;
+}
+
+/* Textos del formulario según el modo de inscripción */
+const TXT_EQUIPO = {
+  equipoLabel:'Nombre del equipo',            equipoPh:'Ej. Los Invencibles',
+  capitanLabel:'Capitán del equipo',          capitanPh:'Nombre y apellido',
+  integrLabel:'Integrantes (nombres / nicks)',integrPh:'1. Nick — 2. Nick — 3. Nick …'
+};
+const TXT_INDIVIDUAL = {
+  equipoLabel:'Nombre del jugador',           equipoPh:'Ingresa tu nombre o nickname',
+  capitanLabel:'Jugador',                     capitanPh:'Nombre y apellido',
+  integrLabel:'Nickname del jugador',         integrPh:'Ingresa tu nickname'
+};
+
+/* Cambia el texto de un <label> conservando el asterisco (*) de obligatorio */
+function setFieldLabel(input, text){
+  if(!input) return;
+  const field = input.closest('.field');
+  const lbl = field && field.querySelector('label');
+  if(lbl) lbl.innerHTML = esc(text) + ' <span class="req">*</span>';
+}
+
+/* Aplica los textos del formulario según sea individual (true) o por equipo (false) */
+function aplicarModoInscripcion(individual){
+  const t = individual ? TXT_INDIVIDUAL : TXT_EQUIPO;
+  const inEquipo  = document.querySelector('[name="equipo"]');
+  const inCapitan = document.querySelector('[name="capitan"]');
+  const inIntegr  = document.querySelector('[name="integrantes"]');
+
+  if(inEquipo){  setFieldLabel(inEquipo,  t.equipoLabel);  inEquipo.placeholder  = t.equipoPh;  }
+  if(inCapitan){ setFieldLabel(inCapitan, t.capitanLabel); inCapitan.placeholder = t.capitanPh; }
+  if(inIntegr){  setFieldLabel(inIntegr,  t.integrLabel);  inIntegr.placeholder  = t.integrPh;  }
+}
+
 // Convierte un color escrito en la hoja (cyan / magenta / #f9a826…) a CSS válido
 function colorCss(c){
   c = (c||'').trim();
@@ -70,7 +137,6 @@ function renderGamesGrid(){
 }
 
 /* ---------- RENDER: selector de juego en la inscripción + precio ---------- */
-/* ---------- RENDER: selector de juego en la inscripción + precio ---------- */
 function renderSelectJuegos(){
   const sel = $('sel-juego');
   const prev = sel.value;
@@ -85,17 +151,37 @@ function costoSeleccion(){
 }
 function actualizarPrecio(){
   const juegoSeleccionado = $('sel-juego').value;
+
   // CONTROL DE RESPALDO: Si no hay juego seleccionado, muestra $... y detiene el proceso
   if (!juegoSeleccionado) {
     $('precio-jugador').textContent = '$...';
     $('total-ui').textContent = '$0';
-    return; 
+    aplicarModoInscripcion(false);   // textos por defecto (por equipo)
+    const inpVacio = $('jugadores');
+    if(inpVacio) inpVacio.readOnly = false;
+    return;
   }
+
   $('precio-jugador').textContent = '$' + costoSeleccion();
-  // Autocompleta el nº de jugadores sugerido del juego (si el usuario no lo cambió a mano)
-  const j = juegoPorId(juegoSeleccionado);
+
+  // 👤/👥 Detecta el modo del juego y adapta el formulario
+  const individual = esJuegoIndividual(juegoSeleccionado);
+  aplicarModoInscripcion(individual);
+
+  const j   = juegoPorId(juegoSeleccionado);
   const inp = $('jugadores');
-  if(j && Number(j.jugadores) > 0 && !inp.dataset.tocado) inp.value = j.jugadores;
+
+  if(individual){
+    // Juego individual: siempre 1 jugador y campo bloqueado
+    inp.value = 1;
+    inp.readOnly = true;
+    inp.dataset.tocado = '';   // permite el autollenado si luego cambia a un juego por equipos
+  } else {
+    // Juego por equipos: se puede editar el nº de jugadores
+    inp.readOnly = false;
+    if(j && Number(j.jugadores) > 0 && !inp.dataset.tocado) inp.value = j.jugadores;
+  }
+
   calcTotal();
 }
 function calcTotal(){
@@ -302,7 +388,7 @@ function init(){
   burger.onclick = () => menu.classList.toggle('open');
   menu.querySelectorAll('a').forEach(a => a.onclick = () => menu.classList.remove('open'));
 
-  // Inscripción: precio dinámico por juego
+  // Inscripción: precio dinámico por juego (y adaptación individual / por equipo)
   $('sel-juego').addEventListener('change', actualizarPrecio);
   $('jugadores').addEventListener('input', () => { $('jugadores').dataset.tocado = '1'; calcTotal(); });
 
@@ -310,21 +396,48 @@ function init(){
   $('form').addEventListener('submit', function(e){
     e.preventDefault();
     const f = new FormData(this);
+    const idJuego = f.get('juego');
     const n = parseInt(f.get('jugadores')) || 0;
     const costo = costoSeleccion();
     const total = n * costo;
+
+    // Nombre bonito del juego (la opción guarda el id; mostramos el nombre)
+    const jSel = juegoPorId(idJuego);
+    const juegoNombre = (jSel && jSel.nombre) || idJuego;
+
+    // ¿Inscripción individual o por equipo?
+    const individual = esJuegoIndividual(idJuego);
+
+    // Arma las líneas del mensaje según el modo
+    let lineas;
+    if(individual){
+      lineas = [
+        `👤 *Jugador:* ${f.get('equipo')}`,         // en modo individual, este campo es el nombre del jugador
+        `🕹️ *Juego:* ${juegoNombre}`,
+        `📛 *Nombre real:* ${f.get('capitan')}`,
+        `📱 *WhatsApp:* ${f.get('telefono')}`,
+        `🎮 *Nickname:* ${f.get('integrantes')}`,
+        `📝 *Comentario:* ${f.get('comentario') || '—'}`
+      ];
+    } else {
+      lineas = [
+        `🏷️ *Equipo:* ${f.get('equipo')}`,
+        `🕹️ *Juego:* ${juegoNombre}`,
+        `👥 *Jugadores:* ${n}`,
+        `👤 *Capitán:* ${f.get('capitan')}`,
+        `📱 *WhatsApp:* ${f.get('telefono')}`,
+        `🧑‍🤝‍🧑 *Integrantes:* ${f.get('integrantes')}`,
+        `📝 *Comentario:* ${f.get('comentario') || '—'}`
+      ];
+    }
+
     const msg = `🎮 *INSCRIPCIÓN — SOFTWARE E-SPORTS 2026*
 ━━━━━━━━━━━━━━━━━
-🏷️ *Equipo:* ${f.get('equipo')}
-🕹️ *Juego:* ${f.get('juego')}
-👥 *Jugadores:* ${n}
-👤 *Capitán:* ${f.get('capitan')}
-📱 *WhatsApp:* ${f.get('telefono')}
-🧑‍🤝‍🧑 *Integrantes:* ${f.get('integrantes')}
-📝 *Comentario:* ${f.get('comentario') || '—'}
+${lineas.join('\n')}
 ━━━━━━━━━━━━━━━━━
 💳 *Total a pagar:* $${total} (${n} × $${costo})
 Quedo atento(a) para coordinar el pago ✅`;
+
     toast('Abriendo WhatsApp… ¡envía el mensaje para confirmar! ✅');
     setTimeout(() => window.open(wa(msg), '_blank'), 700);
   });
